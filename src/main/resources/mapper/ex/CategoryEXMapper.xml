@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.briup.estore.mapper.ex.CategoryEXMapper">
+
+	<resultMap id="RootAndSecoundCategoriesMap" extends="com.briup.estore.mapper.CategoryMapper.BaseResultMap"
+			   type="com.briup.estore.bean.ex.RootCategory">
+		<collection property="childCategories" javaType="list" ofType="com.briup.estore.bean.Category">
+			<id property="id" column="id2"/>
+			<result property="name" column="name2"/>
+			<result property="description" column="description2"/>
+		</collection>
+	</resultMap>
+
+	<resultMap id="SecoundCategoryWithBooksMap" type="com.briup.estore.bean.ex.SecoundCategory"
+			   extends="com.briup.estore.mapper.CategoryMapper.BaseResultMap">
+		<association property="rootCategory" javaType="com.briup.estore.bean.Category">
+			<id property="id" column="p_id"/>
+			<result property="name" column="p_name"/>
+			<result property="description" column="p_des"/>
+			<result property="parentId" column="p_p_id"/>
+		</association>
+		<collection property="bookList" javaType="list" ofType="com.briup.estore.bean.Book">
+			<id property="id" column="b_id"/>
+			<result property="name" column="b_name"/>
+			<result property="price" column="price"/>
+			<result property="author" column="author"/>
+			<result property="publisher" column="publisher"/>
+			<result property="pubdate" column="pubDate"/>
+			<result property="description" column="b_des"/>
+			<result property="categoryId" column="category_id"/>
+		</collection>
+	</resultMap>
+
+	<resultMap id="RootCategoryWithBooksMap" type="com.briup.estore.bean.ex.RootCategory">
+		<id property="id" column="e_id"/>
+		<result property="name" column="e_name"/>
+		<result property="description" column="e_description"/>
+		<result property="parentId" column="e_parent_id"/>
+		<collection property="bookList" javaType="list"
+					resultMap="com.briup.estore.mapper.BookMapper.BaseResultMap"/>
+	</resultMap>
+
+	<select id="findRootAndSecoundCategories" resultMap="RootAndSecoundCategoriesMap">
+		select e1.*,e2.id id2,e2.name name2,e2.description description2
+		from es_category e1,es_category e2
+		where e1.id=e2.parent_id
+	</select>
+
+	<select id="findSecoundCategoryWithBooksByCategoryId" resultMap="SecoundCategoryWithBooksMap">
+		select e2.*,
+		e1.id p_id,e1.name p_name,e1.description p_des,e1.parent_id p_p_id,
+		b.id b_id,b.name b_name,b.price,b.author,b.publisher,b.pubDate,b.description b_des,b.category_id
+		from es_category e1,es_category e2,es_book b
+		where e2.id=b.category_id
+		and e2.parent_id=e1.id
+		and e2.id=#{categoryId}
+	</select>
+
+	<select id="findRootCategoryWithBooksByCategoryId" resultMap="RootCategoryWithBooksMap">
+		select e1.id e_id,e1.name e_name,e1.description e_description,e1.parent_id e_parent_id,
+		b.*
+		from es_category e1,es_category e2,es_book b
+		where e2.id=b.category_id
+		and e2.parent_id=e1.id
+		and e2.parent_id=#{categoryId}
+	</select>
+
+</mapper>

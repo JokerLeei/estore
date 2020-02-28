@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.briup.estore.mapper.ex.OrderEXMapper">
+
+	<resultMap id="OrderFormEXMapper" extends="com.briup.estore.mapper.OrderFormMapper.BaseResultMap"
+			   type="com.briup.estore.bean.ex.OrderFormEX">
+		<!--通过继承-->
+		<!--一对一 ShopAddres-->
+		<association property="shopAddress" javaType="com.briup.estore.bean.ShopAddress">
+			<id property="id" column="add_id"/>
+			<result property="receivename" column="receiveName"/>
+			<result property="address" column="address"/>
+			<result property="phone" column="phone"/>
+			<result property="customerId" column="add_customer_id"/>
+		</association>
+		<!--一对多 OrderLine-->
+		<collection property="orderLines" javaType="list" ofType="com.briup.estore.bean.OrderLine">
+			<id property="id" column="l_id"/>
+			<result property="num" column="l_num"/>
+			<result property="cost" column="l_cost"/>
+			<result property="bookId" column="book_id"/>
+			<result property="orderformId" column="orderform_id"/>
+		</collection>
+	</resultMap>
+
+	<resultMap id="OrderLineEXMapper" type="com.briup.estore.bean.ex.OrderLineEX"
+			   extends="com.briup.estore.mapper.OrderLineMapper.BaseResultMap">
+		<association property="book" javaType="com.briup.estore.bean.Book">
+			<!--此处简略，只取了name列，并设置-->
+			<result property="name" column="name"/>
+		</association>
+	</resultMap>
+
+	<select id="findOrdersAllPropertiesByCustomerId" resultMap="OrderFormEXMapper">
+		select form.*,
+		address.id add_id,address.receiveName,address.address,address.phone,address.customer_id add_customer_id,
+		line.id l_id,line.num l_num,line.cost l_cost,line.book_id,line.orderForm_id
+		from es_orderform form,es_orderline line,es_shopaddress address
+		where form.customer_id=#{customerId}
+		and form.shopAddress_id=address.id
+		and form.id=line.orderForm_id
+	</select>
+
+	<select id="findOrderLinesByOrderFormId" resultMap="OrderLineEXMapper">
+		select l.*,b.name
+		from es_orderline l,es_book b
+		where l.orderForm_id=1
+		and l.book_id=b.id
+	</select>
+
+</mapper>
